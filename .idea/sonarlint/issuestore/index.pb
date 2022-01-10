@@ -19,5 +19,3 @@ H
 src/util/qrCodeHandle.ts,9/2/9259f0c427316ef30c1189703265b63c449f00ac
 G
 src/static/staticVar.ts,a/0/a08d694e21abb2afef0445e8f917b94aea0e5a2d
-O
-src/whatsapp/whatsConnection.ts,a/4/a4d518fe7329599ca4b35e1abb8d214b73295673
