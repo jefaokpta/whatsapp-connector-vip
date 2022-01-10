@@ -17,5 +17,3 @@ E
 src/model/AuthInfo.ts,1/f/1fd16deb681f90ce12859a1f84992a82c591b7c8
 H
 src/util/qrCodeHandle.ts,9/2/9259f0c427316ef30c1189703265b63c449f00ac
-G
-src/static/staticVar.ts,a/0/a08d694e21abb2afef0445e8f917b94aea0e5a2d
