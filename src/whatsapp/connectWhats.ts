@@ -85,14 +85,12 @@ export async function connectToWhatsApp () {
     async function connectWA() {
         await conn.connect()
             .then(() => {
-                //salvaSessao() // TODO: salvar sessao
+                authConfirmed(conn.base64EncodedAuthInfo())
                 console.log('CONECTOU COM SUCESSO')
             }).catch(error => console.log(error.message))
     }
 
     await connectWA();
-
-    // function salvaSessao() { // TODO: salvar sessao
 
     conn.on('close', reason => {
         console.log(`DESCONECTADO ${reason.reason} RECONECTANDO? ${reason.isReconnecting}`)
