@@ -38,6 +38,22 @@ export async function messageAnalisator(message: WebMessageInfo, conn: WAConnect
     return axios.post(`${urlBase}/api/messages`, messageData)
 }
 
+export function sendTextMessageAckToApi(message: WebMessageInfo) {
+    const messageData = new MessageData(
+        message.key,
+        message.message,
+        message.messageTimestamp,
+        message.status,
+        process.env.COMPANY || "12",
+        process.env.API_PORT || "3001",
+        false
+    )
+    axios.post(`${urlBase}/api/messages`, messageData)
+        .then(response => {
+            console.log(`ACK Text: ${response.status} - ${message.message}`)
+        })
+}
+
 function downloadAndSaveMedia(message: WebMessageInfo, mediaTitle: string, conn: WAConnection){
     const fileName = `${mediaTitle}-${message.messageTimestamp}-${message.key.id}`
     return conn.downloadAndSaveMediaMessage (message, `${mediaFolder}/${fileName}`) // to decrypt & save to file

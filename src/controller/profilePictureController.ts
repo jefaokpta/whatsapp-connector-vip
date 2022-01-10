@@ -1,11 +1,11 @@
 import express from "express";
 import {WhatsConnection} from "../whatsapp/whatsConnection";
 
-
+const conn = WhatsConnection.connection
 export const profilePicture = express()
 
 profilePicture.get('/:remoteJid', (req, res) => {
-    WhatsConnection.connection.getProfilePicture (req.params.remoteJid)
+    conn.getProfilePicture (req.params.remoteJid)
         .then(data => {
             //console.log(data)
             res.json({picture: data})
