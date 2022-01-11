@@ -21,18 +21,33 @@ export async function messageAnalisator(message: WebMessageInfo, conn: WAConnect
     }else if(message.message?.documentMessage){
         messageData = await documentMessage(messageData, conn, message);
     }else if(message.message?.videoMessage){
-        //TODO: videoMessage
+        await videoMessage(messageData, message, conn);
     }else if(message.message?.imageMessage){
-//TODO: imageMessage
+        await imageMessage(messageData, message, conn);
     }else if(message.message?.buttonsMessage){
-//todo: buttonsMessage
+        console.log('::::::::: BOTAO PERGUNTA')
+        console.log(message)
+        return
     }else if(message.message?.buttonsResponseMessage){
-//todo: buttonsResponseMessage
+        console.log(';;;;;;;;;;;; BOTAO RESPOSTA')
+        console.log(message)
+        messageData.message = message.message
+        return axios.post(`${urlBase}/api/messages/responses`, messageData)
     }else if(message.message?.contactMessage){
-//todo: contactMessage
+        console.log(';;;;;;;;;;;;; RECEBIDO CONTATO')
+        const vcardCuted = message.message.contactMessage.vcard!!.split('waid=')[1];
+        messageData.message = {
+            conversation: `${message.message.contactMessage.displayName}: ${vcardCuted.split(':')[0]}`
+        }
     }else if(message.message?.contactsArrayMessage){
-//todo: contactsArrayMessage
-    }else{ // textMessage e qlqr outro tipo de mensagem
+        console.log(';;;;;;;;;;;;; RECEBIDO ARRAY CONTATOS')
+        messageData.message = {conversation: ''}
+        message.message.contactsArrayMessage.contacts!!.forEach(contact => {
+            const vcardCuted = contact.vcard!!.split('waid=')[1];
+            messageData.message!!.conversation += `${contact.displayName}: ${vcardCuted.split(':')[0]} \n`
+        })
+        console.log(messageData.message)
+    }else{ // TEXT MESSAGE OR OTHER UNKNOWN MESSAGE YET
         messageData.message = message.message
     }
     return axios.post(`${urlBase}/api/messages`, messageData)
@@ -83,5 +98,25 @@ async function documentMessage(messageData: MessageData, conn: WAConnection, mes
             console.log(error)
         } else console.log('DOCUMENTO SALVO COM SUCESSO!')
     })
+    return messageData
+}
+
+async function videoMessage(messageData: MessageData, message: WebMessageInfo, conn: WAConnection){
+    messageData.mediaMessage = true
+    messageData.mediaType = 'VIDEO'
+    messageData.mediaUrl = await downloadAndSaveMedia(message, 'video', conn)
+    if (message.message?.videoMessage?.caption) {
+        messageData.mediaCaption = message.message.videoMessage.caption
+    }
+    return messageData
+}
+
+async function imageMessage(messageData: MessageData, message: WebMessageInfo, conn: WAConnection){
+    messageData.mediaMessage = true
+    messageData.mediaType = 'IMAGE'
+    messageData.mediaUrl = await downloadAndSaveMedia(message, 'image', conn)
+    if(message.message?.imageMessage?.caption){
+        messageData.mediaCaption = message.message.imageMessage.caption
+    }
     return messageData
 }

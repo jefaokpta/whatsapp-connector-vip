@@ -16,6 +16,7 @@ export class MessageData {
     mediaFileLength: number | Long | null | undefined
     mediaPageCount: number | null | undefined
     mediaFileTitle: string | null | undefined
+    mediaCaption: string | null | undefined
 
     constructor(key: proto.IMessageKey,
                 message: proto.IMessage | null | undefined,
