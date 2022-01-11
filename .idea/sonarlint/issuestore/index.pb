@@ -1,6 +1,4 @@
 
-L
-src/whatsapp/connectWhats.ts,5/c/5c92d4dde1efcd580bb6c3e0b29b873a9d1025bf
 G
 src/static/staticVar.ts,a/0/a08d694e21abb2afef0445e8f917b94aea0e5a2d
 <

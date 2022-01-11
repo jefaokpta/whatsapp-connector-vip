@@ -43,7 +43,9 @@ export async function connectToWhatsApp () {
         for (const message of unread) {
             remoteJidsMap.set(message.key.remoteJid, null)
             const responseApi = await messageAnalisator(message, conn)
-            statusApiLastPost = responseApi.status
+            if (responseApi){
+                statusApiLastPost = responseApi.status
+            }
         }
         if(statusApiLastPost === 200){
             for (const remoteJid of remoteJidsMap.keys()) {
@@ -105,13 +107,13 @@ export async function connectToWhatsApp () {
         if (chatUpdate.messages && chatUpdate.count) {
             console.log('MESSAGE COM UPDATE COUNT')
             const message = chatUpdate.messages.all()[0]
-            const statusApi = await messageAnalisator(message, conn)
-            if(statusApi.status === 200){
+            const responseAPi = await messageAnalisator(message, conn) // PODE RETORNAR OBJ AXIOS OU NAO
+            if(responseAPi && responseAPi.status === 200){
                 conn.chatRead(message.key.remoteJid!!)
                     .then(() => console.log(`CHAT UPDATE ${message.key.remoteJid} MARCADO COMO LIDO`))
                     .catch(error => console.log(error.message))
             }
-            console.log(`CHAT UPDATE ${statusApi.status}`)
+            console.log(`CHAT UPDATE ${responseAPi?.status}`)
         }
         else if(chatUpdate.presences){
             console.log(chatUpdate)
@@ -121,8 +123,8 @@ export async function connectToWhatsApp () {
             const message = chatUpdate.messages.all()[0]
             console.log(message)
             try {
-                const resApi = await messageAnalisator(message, conn)
-                console.log('POSSIVELMENTE MENSAGEM ENVIADA '+ resApi.status)
+                const responseApi = await messageAnalisator(message, conn) // PODE RETORNAR OBJ AXIOS OU NAO
+                console.log('POSSIVELMENTE MENSAGEM ENVIADA '+ responseApi?.status)
             }catch (error) {
                 console.log(error)
             }
