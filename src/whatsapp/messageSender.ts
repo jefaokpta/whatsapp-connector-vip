@@ -1,7 +1,7 @@
 import {WhatsConnection} from "./whatsConnection";
 import {MessageType, Mimetype, proto} from "@adiwajshing/baileys";
 import {MessageApi} from "../model/messageApi";
-import {sendTextMessageAckToApi} from "../util/messageHandle";
+import {messageAnalisator} from "../util/messageHandle";
 import ButtonsMessage = proto.ButtonsMessage;
 import {mediaFolder} from "../static/staticVar";
 import {MediaMessage} from "../model/mediaMessage";
@@ -12,7 +12,7 @@ const conn = WhatsConnection.connection
 
 export function sendTxt(message: MessageApi) {
     conn.prepareMessage(message.remoteJid, message.message, MessageType.text).then((messageBuilted) => {
-        sendTextMessageAckToApi(messageBuilted)
+        messageAnalisator(messageBuilted, conn)
         conn.sendMessage (message.remoteJid, message.message, MessageType.text, {
             messageId: messageBuilted.key.id!!,
         })
@@ -49,10 +49,22 @@ export function sendMediaMessage(fileUpload: MediaMessage) {
         ptt: fileUpload.ptt,
         filename: fileUpload.filePath
     }
-    //conn.prepareMessage (fileUpload.remoteJid, { url: `${mediaFolder}/outbox/${fileUpload.filePath}` }, messageDetail.messageType, messageOptions)
-    conn.sendMessage (fileUpload.remoteJid, { url: `${mediaFolder}/outbox/${fileUpload.filePath}` }, messageDetail.messageType, messageOptions)
-        .then((returnedMessage) => console.log(returnedMessage.key))
-        .catch(error => console.log(error))
+    conn.prepareMessage(fileUpload.remoteJid, { url: `${mediaFolder}/outbox/${fileUpload.filePath}` }, messageDetail.messageType, messageOptions)
+        .then(messageBuilded => {
+            console.log(messageBuilded)
+            messageAnalisator(messageBuilded, conn)
+                .then(() => {
+                    conn.sendMessage (fileUpload.remoteJid, { url: `${mediaFolder}/outbox/${fileUpload.filePath}` }, messageDetail.messageType, {
+                        caption: messageOptions.caption,
+                        mimetype: messageOptions.mimetype,
+                        ptt: messageOptions.ptt,
+                        filename: messageOptions.filename,
+                        messageId: messageBuilded.key.id!!,
+                    })
+                        .then((returnedMessage) => console.log(returnedMessage.key))
+                        .catch(error => console.log(error))
+                })
+        }).catch(error => console.log(error))
 }
 
 function messageDetails(fileUpload: MediaMessage): MediaMessageType {

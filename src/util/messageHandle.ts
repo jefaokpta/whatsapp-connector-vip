@@ -6,7 +6,7 @@ import {MessageData} from "../model/messageData";
 import * as fs from "fs";
 
 export async function messageAnalisator(message: WebMessageInfo, conn: WAConnection) {
-    let messageData = new MessageData(
+    const messageData = new MessageData(
         message.key,
         null,
         message.messageTimestamp,
@@ -17,9 +17,9 @@ export async function messageAnalisator(message: WebMessageInfo, conn: WAConnect
     )
 
     if(message.message?.audioMessage){
-        messageData = await audioMessage(messageData, message, conn);
+        await audioMessage(messageData, message, conn);
     }else if(message.message?.documentMessage){
-        messageData = await documentMessage(messageData, conn, message);
+        await documentMessage(messageData, conn, message);
     }else if(message.message?.videoMessage){
         await videoMessage(messageData, message, conn);
     }else if(message.message?.imageMessage){
@@ -53,38 +53,21 @@ export async function messageAnalisator(message: WebMessageInfo, conn: WAConnect
     return axios.post(`${urlBase}/api/messages`, messageData)
 }
 
-export function sendTextMessageAckToApi(message: WebMessageInfo) {
-    const messageData = new MessageData(
-        message.key,
-        message.message,
-        message.messageTimestamp,
-        message.status,
-        process.env.COMPANY || "12",
-        process.env.API_PORT || "3001",
-        false
-    )
-    axios.post(`${urlBase}/api/messages`, messageData)
-        .then(response => {
-            console.log(`ACK Text: ${response.status} - ${message.message}`)
-        })
-}
-
 function downloadAndSaveMedia(message: WebMessageInfo, mediaTitle: string, conn: WAConnection){
-    const fileName = `${mediaTitle}-${message.messageTimestamp}-${message.key.id}`
+    console.log(`Downloading media: ${mediaTitle}`)
+    const fileName = `${mediaTitle}-${message.key.id}`
     return conn.downloadAndSaveMediaMessage (message, `${mediaFolder}/${fileName}`) // to decrypt & save to file
-    //console.log(message.key.remoteJid + " MEDIA SALVA EM: " + savedFilename)
 }
 
 async function audioMessage(messageData: MessageData, message: WebMessageInfo, conn: WAConnection){
     messageData.mediaMessage = true
-    messageData.mediaType = 'AUDIO'
+    messageData.mediaType = 'AUDIO' // todo: prevent multiple downloads
     messageData.mediaUrl = await downloadAndSaveMedia(message, 'audio', conn)
-    return messageData
 }
 
 async function documentMessage(messageData: MessageData, conn: WAConnection, message: WebMessageInfo) {
     messageData.mediaMessage = true
-    messageData.mediaType = 'DOCUMENT'
+    messageData.mediaType = 'DOCUMENT' // todo: prevent multiple downloads
     const buffer = await conn.downloadMediaMessage(message)
     const fileTitle = message.message!!.documentMessage!!.fileName
     const fileExtension = fileTitle!!.substring(fileTitle!!.lastIndexOf('.'))
@@ -98,25 +81,28 @@ async function documentMessage(messageData: MessageData, conn: WAConnection, mes
             console.log(error)
         } else console.log('DOCUMENTO SALVO COM SUCESSO!')
     })
-    return messageData
 }
 
 async function videoMessage(messageData: MessageData, message: WebMessageInfo, conn: WAConnection){
     messageData.mediaMessage = true
-    messageData.mediaType = 'VIDEO'
+    messageData.mediaType = 'VIDEO' // todo: prevent multiple downloads
     messageData.mediaUrl = await downloadAndSaveMedia(message, 'video', conn)
     if (message.message?.videoMessage?.caption) {
         messageData.mediaCaption = message.message.videoMessage.caption
     }
-    return messageData
 }
 
 async function imageMessage(messageData: MessageData, message: WebMessageInfo, conn: WAConnection){
     messageData.mediaMessage = true
     messageData.mediaType = 'IMAGE'
-    messageData.mediaUrl = await downloadAndSaveMedia(message, 'image', conn)
+    const mimeTypeMedia = message.message?.imageMessage?.mimetype?.split('/')[1]
+    if(fs.existsSync(`${mediaFolder}/image-${message.key.id}.${mimeTypeMedia}`)){
+        console.log(`IMAGEM JA EXISTE image-${message.key.id}`)
+        messageData.mediaUrl = `image-${message.key.id}.${mimeTypeMedia}`
+    } else {
+        messageData.mediaUrl = await downloadAndSaveMedia(message, 'image', conn)
+    }
     if(message.message?.imageMessage?.caption){
         messageData.mediaCaption = message.message.imageMessage.caption
     }
-    return messageData
 }
