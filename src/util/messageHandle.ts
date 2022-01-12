@@ -61,34 +61,60 @@ function downloadAndSaveMedia(message: WebMessageInfo, mediaTitle: string, conn:
 
 async function audioMessage(messageData: MessageData, message: WebMessageInfo, conn: WAConnection){
     messageData.mediaMessage = true
-    messageData.mediaType = 'AUDIO' // todo: prevent multiple downloads
-    messageData.mediaUrl = await downloadAndSaveMedia(message, 'audio', conn)
+    messageData.mediaType = 'AUDIO'
+    console.log(message.message?.audioMessage?.mimetype)
+    const mimeTypeMedia = defineMimeTypeAudioMedia(message);
+    const filePath  = `${mediaFolder}/audio-${message.key.id}.${mimeTypeMedia}`
+    if(fs.existsSync(filePath)){
+        console.log(`AUDIO JA EXISTE ${filePath}`)
+        messageData.mediaUrl = filePath
+    } else {
+        messageData.mediaUrl = await downloadAndSaveMedia(message, 'audio', conn)
+    }
+}
+
+function defineMimeTypeAudioMedia(message: WebMessageInfo){
+    if(message.message?.audioMessage?.mimetype?.includes('ogg')){
+        return 'ogg'
+    } else if(message.message?.audioMessage?.mimetype?.includes('mp4')){
+        return 'mp4'
+    } else{
+        return 'mpeg'
+    }
 }
 
 async function documentMessage(messageData: MessageData, conn: WAConnection, message: WebMessageInfo) {
     messageData.mediaMessage = true
-    messageData.mediaType = 'DOCUMENT' // todo: prevent multiple downloads
-    const buffer = await conn.downloadMediaMessage(message)
+    messageData.mediaType = 'DOCUMENT'
     const fileTitle = message.message!!.documentMessage!!.fileName
     const fileExtension = fileTitle!!.substring(fileTitle!!.lastIndexOf('.'))
-    const fileName = `document-${message.messageTimestamp}-${message.key.id}${fileExtension}`
-    messageData.mediaUrl = fileName
+    const filePath = `${mediaFolder}/document-${message.key.id}${fileExtension}`
+    if(fs.existsSync(filePath)){
+        console.log(`DOCUMENTO JA EXISTE ${filePath}`)
+    } else {
+        const buffer = await conn.downloadMediaMessage(message)
+        console.log(`Downloading media: ${fileTitle}`)
+        try{
+            fs.writeFileSync(filePath, buffer)
+        }catch (e) {
+            console.log('ERRO AO SALVAR DOCUMENTO')
+            console.log(e)
+        }
+        console.log(`Documento salvo em: ${filePath}`)
+    }
+    messageData.mediaUrl = filePath
     messageData.mediaFileLength = message.message?.documentMessage?.fileLength
     messageData.mediaPageCount = message.message?.documentMessage?.pageCount
     messageData.mediaFileTitle = fileTitle
-    fs.writeFile(`${mediaFolder}/${fileName}`, buffer, error => {
-        if (error) {
-            console.log(error)
-        } else console.log('DOCUMENTO SALVO COM SUCESSO!')
-    })
 }
 
 async function videoMessage(messageData: MessageData, message: WebMessageInfo, conn: WAConnection){
     messageData.mediaMessage = true
     messageData.mediaType = 'VIDEO'
-    if(fs.existsSync(`${mediaFolder}/video-${message.key.id}.mp4`)){
-        console.log(`VIDEO JA EXISTE video-${message.key.id}`)
-        messageData.mediaUrl = `image-${message.key.id}.mp4`
+    const filePath  = `${mediaFolder}/video-${message.key.id}.mp4`
+    if(fs.existsSync(filePath)){
+        console.log(`VIDEO JA EXISTE ${filePath}`)
+        messageData.mediaUrl = filePath
     } else {
     messageData.mediaUrl = await downloadAndSaveMedia(message, 'video', conn)
     }
@@ -101,9 +127,10 @@ async function imageMessage(messageData: MessageData, message: WebMessageInfo, c
     messageData.mediaMessage = true
     messageData.mediaType = 'IMAGE'
     const mimeTypeMedia = message.message?.imageMessage?.mimetype?.split('/')[1]
-    if(fs.existsSync(`${mediaFolder}/image-${message.key.id}.${mimeTypeMedia}`)){
-        console.log(`IMAGEM JA EXISTE image-${message.key.id}.${mimeTypeMedia}`)
-        messageData.mediaUrl = `image-${message.key.id}.${mimeTypeMedia}`
+    const filePath  = `${mediaFolder}/image-${message.key.id}.${mimeTypeMedia}`
+    if(fs.existsSync(filePath)){
+        console.log(`IMAGEM JA EXISTE ${filePath}`)
+        messageData.mediaUrl = filePath
     } else {
         messageData.mediaUrl = await downloadAndSaveMedia(message, 'image', conn)
     }

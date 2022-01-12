@@ -105,15 +105,15 @@ export async function connectToWhatsApp () {
         // `chatUpdate` is a partial object, containing the updated properties of the chat
         // received a new message
         if (chatUpdate.messages && chatUpdate.count) {
-            console.log('MESSAGE COM UPDATE COUNT')
             const message = chatUpdate.messages.all()[0]
+            console.log('RECEBENDO NOVA MENSAGEM DE ' + message.key.remoteJid)
+            console.log(message.message)
             const responseAPi = await messageAnalisator(message, conn) // PODE RETORNAR OBJ AXIOS OU NAO
             if(responseAPi && responseAPi.status === 200){
                 conn.chatRead(message.key.remoteJid!!)
                     .then(() => console.log(`CHAT UPDATE ${message.key.remoteJid} MARCADO COMO LIDO`))
                     .catch(error => console.log(error.message))
             }
-            console.log(`CHAT UPDATE ${responseAPi?.status}`)
         }
         else if(chatUpdate.presences){
             console.log(chatUpdate)
@@ -121,14 +121,14 @@ export async function connectToWhatsApp () {
         }
         else if(chatUpdate.messages){
             const message = chatUpdate.messages.all()[0]
-            console.log(message)
+            console.log('UPDATE DE MENSAGEM ENVIADA PARA ' + message.key.remoteJid)
+            console.log(message.message)
             try {
                 const responseApi = await messageAnalisator(message, conn) // PODE RETORNAR OBJ AXIOS OU NAO
-                console.log('POSSIVELMENTE MENSAGEM ENVIADA '+ responseApi?.status)
+                console.log('UPDATE ENVIADO PRA API - STATUS: '+ responseApi?.status)
             }catch (error) {
                 console.log(error)
             }
-
         }
         else if(chatUpdate.imgUrl){
             console.log('APARENTEMENTE TROCA DE IMG DE PERFIL')
