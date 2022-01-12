@@ -13,6 +13,8 @@ const conn = WhatsConnection.connection
 export function sendTxt(message: MessageApi) {
     conn.prepareMessage(message.remoteJid, message.message, MessageType.text).then((messageBuilted) => {
         messageAnalisator(messageBuilted, conn)
+            .then(responseApi => console.log(`MENSAGEM ENVIADA PARA API STATUS: ${responseApi?.status}`))
+            .catch(error => console.log(`ERRO AO ENVIAR MENSAGEM PARA API: ${error}`))
         conn.sendMessage (message.remoteJid, message.message, MessageType.text, {
             messageId: messageBuilted.key.id!!,
         })
@@ -51,9 +53,9 @@ export function sendMediaMessage(fileUpload: MediaMessage) {
     }
     conn.prepareMessage(fileUpload.remoteJid, { url: `${mediaFolder}/outbox/${fileUpload.filePath}` }, messageDetail.messageType, messageOptions)
         .then(messageBuilded => {
-            console.log(messageBuilded)
             messageAnalisator(messageBuilded, conn)
-                .then(() => {
+                .then(responseApi => {
+                    console.log(`MENSAGEM DE MEDIA ENVIADA PARA API STATUS: ${responseApi?.status}`)
                     conn.sendMessage (fileUpload.remoteJid, { url: `${mediaFolder}/outbox/${fileUpload.filePath}` }, messageDetail.messageType, {
                         caption: messageOptions.caption,
                         mimetype: messageOptions.mimetype,
@@ -64,7 +66,7 @@ export function sendMediaMessage(fileUpload: MediaMessage) {
                         .then((returnedMessage) => console.log(returnedMessage.key))
                         .catch(error => console.log(error))
                 })
-        }).catch(error => console.log(error))
+        }).catch(error => console.log(`ERRO AO ENVIAR MENSAGEM DE MEDIA PARA API: ${error}`))
 }
 
 function messageDetails(fileUpload: MediaMessage): MediaMessageType {
