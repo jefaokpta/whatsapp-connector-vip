@@ -9,7 +9,7 @@ const port = process.env.PORT || 3001
 
 // run in main file
 connectToWhatsApp ()
-    .catch (error => console.log("unexpected error: " + error) ) // catch any errors
+    .catch (error => console.log("ERRO NA INICIALIZACAO: " + error) ) // catch any errors
 
 
 router.use('/whats/messages', messageController)
