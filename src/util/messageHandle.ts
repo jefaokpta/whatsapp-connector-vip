@@ -85,8 +85,13 @@ async function documentMessage(messageData: MessageData, conn: WAConnection, mes
 
 async function videoMessage(messageData: MessageData, message: WebMessageInfo, conn: WAConnection){
     messageData.mediaMessage = true
-    messageData.mediaType = 'VIDEO' // todo: prevent multiple downloads
+    messageData.mediaType = 'VIDEO'
+    if(fs.existsSync(`${mediaFolder}/video-${message.key.id}.mp4`)){
+        console.log(`VIDEO JA EXISTE video-${message.key.id}`)
+        messageData.mediaUrl = `image-${message.key.id}.mp4`
+    } else {
     messageData.mediaUrl = await downloadAndSaveMedia(message, 'video', conn)
+    }
     if (message.message?.videoMessage?.caption) {
         messageData.mediaCaption = message.message.videoMessage.caption
     }
@@ -97,7 +102,7 @@ async function imageMessage(messageData: MessageData, message: WebMessageInfo, c
     messageData.mediaType = 'IMAGE'
     const mimeTypeMedia = message.message?.imageMessage?.mimetype?.split('/')[1]
     if(fs.existsSync(`${mediaFolder}/image-${message.key.id}.${mimeTypeMedia}`)){
-        console.log(`IMAGEM JA EXISTE image-${message.key.id}`)
+        console.log(`IMAGEM JA EXISTE image-${message.key.id}.${mimeTypeMedia}`)
         messageData.mediaUrl = `image-${message.key.id}.${mimeTypeMedia}`
     } else {
         messageData.mediaUrl = await downloadAndSaveMedia(message, 'image', conn)
