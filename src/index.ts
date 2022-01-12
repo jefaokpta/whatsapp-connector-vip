@@ -7,7 +7,7 @@ const router = express()
 router.use(express.json())
 const port = process.env.PORT || 3001
 
-// run in main file teste
+// run in main file
 connectToWhatsApp ()
     .catch (error => console.log("ERRO NA INICIALIZACAO: " + error) ) // catch any errors
 
