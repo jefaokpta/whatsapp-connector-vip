@@ -1,0 +1,17 @@
+version: '3.1'
+
+services:
+  whats-connector:
+    build: ../
+    ports:
+      - 3001:3000
+    environment:
+      - COMPANY=12
+      - API_PORT=3001
+      - TZ=America/Sao_Paulo
+#    restart: on-failure
+    volumes:
+      - /tmp/whatsMediaHost:/whatsMedia
+
+## docker build --tag jefaokpta/node-whats:2.0 .
+## docker run -d --name=whats-12 -p3001:3000 -e COMPANY=12 -e API_PORT=3001 --restart=on-failure -v /tmp/whatsMediaHost:/whatsMedia jefaokpta/node-whats:1.0
