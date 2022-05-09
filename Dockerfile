@@ -8,7 +8,7 @@ COPY ./package*.json .
 
 COPY ./dist ./dist
 
-RUN npm install
+RUN npm install --production
 
 CMD [ "node", "dist/index.js" ]
 
